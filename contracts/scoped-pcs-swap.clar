@@ -66,10 +66,8 @@
 
 (define-public (fulfill-swap
     (id uint)
-    (token-a (optional {
-      token: <sip-010>,
-      name: (string-ascii 128),
-    }))
+    (token-a (optional <sip-010>))
+    (token-a-name (string-ascii 128))
     (token-b (optional <sip-010>))
   )
   (let (
@@ -95,22 +93,18 @@
     ;; Verify and send token a to the caller
     (unwrap!
       (match token-a
-        trait-a (let (
-            (a (unwrap! swap-a ERR_TOKEN_MISMATCH))
-            (token (get token trait-a))
-            (name (get name trait-a))
-          )
-          (asserts! (is-eq (contract-of token) a) ERR_TOKEN_MISMATCH)
-          (with-assets {
+        trait-a (let ((a (unwrap! swap-a ERR_TOKEN_MISMATCH)))
+          (asserts! (is-eq (contract-of trait-a) a) ERR_TOKEN_MISMATCH)
+          (with-post-conditions {
             stx: u0,
             fts: (list {
-              contract: (contract-of token),
-              token: name,
+              contract: (contract-of trait-a),
+              token: token-a-name,
               amount: amount-a,
             }),
             nfts: (list),
           }
-            (as-contract (contract-call? token transfer amount-a tx-sender caller none))
+            (as-contract (contract-call? trait-a transfer amount-a tx-sender caller none))
           )
         )
         (as-contract (stx-transfer? amount-a tx-sender caller))
@@ -137,10 +131,8 @@
 
 (define-public (cancel-swap
     (id uint)
-    (token-a (optional {
-      token: <sip-010>,
-      name: (string-ascii 128),
-    }))
+    (token-a (optional <sip-010>))
+    (token-a-name (string-ascii 128))
   )
   (let (
       (swap (unwrap! (map-get? swaps-available id) ERR_SWAP_NOT_FOUND))
@@ -153,22 +145,18 @@
     ;; Verify token-a and refund the tokens to the sender
     (unwrap!
       (match token-a
-        trait-a (let (
-            (a (unwrap! swap-a ERR_TOKEN_MISMATCH))
-            (token (get token trait-a))
-            (name (get name trait-a))
-          )
-          (asserts! (is-eq (contract-of token) a) ERR_TOKEN_MISMATCH)
-          (with-assets {
+        trait-a (let ((a (unwrap! swap-a ERR_TOKEN_MISMATCH)))
+          (asserts! (is-eq (contract-of trait-a) a) ERR_TOKEN_MISMATCH)
+          (with-post-conditions {
             stx: u0,
             fts: (list {
-              contract: (contract-of token),
-              token: name,
+              contract: (contract-of trait-a),
+              token: token-a-name,
               amount: amount-a,
             }),
             nfts: (list),
           }
-            (as-contract (contract-call? token transfer amount-a tx-sender caller none))
+            (as-contract (contract-call? trait-a transfer amount-a tx-sender caller none))
           )
         )
         (as-contract (stx-transfer? amount-a tx-sender caller))
@@ -182,10 +170,10 @@
 )
 
 ;; This function is used to make this contract compile successfully.
-;; In the real implementation, `with-assets` would be a built-in function
-;; that handles setting up a sandbox for the `body` in which only `assets`
-;; are accessible.
-(define-private (with-assets
+;; In the real implementation, `with-post-conditions` would be a built-in
+;; function that handles setting up post-conditions to check the assets that
+;; were transferred in the `body`, and panic if the conditions are not met.
+(define-private (with-post-conditions
     (assets {
       stx: uint,
       fts: (list

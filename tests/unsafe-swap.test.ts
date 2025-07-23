@@ -121,7 +121,7 @@ describe("unsafe-swap contract", () => {
     it("should transfer STX from sender to contract when adding swap", () => {
       const swapAmount = 1000000n;
       const initialBalance =
-        simnet.getAssetsMap().get("STX")?.get(wallet1) || 0;
+        simnet.getAssetsMap().get("STX")?.get(wallet1) || 0n;
 
       simnet.callPublicFn(
         "unsafe-swap",
@@ -177,9 +177,9 @@ describe("unsafe-swap contract", () => {
 
     it("should transfer tokens correctly when fulfilling swap", () => {
       const wallet1InitialBalance =
-        simnet.getAssetsMap().get("STX")?.get(wallet1) || 0;
+        simnet.getAssetsMap().get("STX")?.get(wallet1) || 0n;
       const wallet2InitialBalance =
-        simnet.getAssetsMap().get("STX")?.get(wallet2) || 0;
+        simnet.getAssetsMap().get("STX")?.get(wallet2) || 0n;
 
       simnet.callPublicFn(
         "unsafe-swap",

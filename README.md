@@ -110,3 +110,26 @@ still valid Clarity code.
   )
 )
 ```
+
+### Scoped Post-Conditions - scoped-pcs-swap.clar
+
+In this contract, we explore scoped post-conditions, where a new expression
+defines post-conditions that apply to its subexpressions.
+
+```clarity
+(with-post-conditions
+  (list {
+    owner: (as-contract tx-sender),
+    asset: (some token-contract),
+    max-amount: transfer-amount,
+  })
+  ;; After transfer-operation is executed, the post-conditions will be checked
+  (transfer-operation)
+)
+```
+
+The `with-post-conditions` block allows the contract to specify what assets are
+allowed to have been moved while executing the contained sub-expression. If
+assets have moved outside of what is specified in the list, the entire
+transaction will be rolled back and will fail with a runtime error indicating
+the post-condition failure.
